@@ -4,9 +4,17 @@ import time
 src = input("please enter source directory... ")
 rep = input("please enter replica directory... ")
 sync_int = int(input("please enter a synchronization interval (in seconds)... "))
+log_path = input('please choose the directory for the log file... ')
+log_name = log_path + 'log.txt'
 
 
 def one_way_sync(source_folder: str, replica_folder: str):
+    # create a blank text file to act as log
+    with open(log_name, 'w') as text:
+        text.write("***Log of All Changes***\n")
+        line = '-'
+        text.write(f'{line * 24}\n')
+
     run = True
     i = 0
 
@@ -22,8 +30,11 @@ def one_way_sync(source_folder: str, replica_folder: str):
                         file_list.append(file_path)
 
         # checking if files were modified since last sync
-        for file_path in file_list:
-            pass
+        for file in file_list:
+            mod_time = os.path.getmtime(file)
+            difference_in_times = current_time - mod_time
+            if difference_in_times < sync_int:
+                pass
 
         # run counter
         i += 1
