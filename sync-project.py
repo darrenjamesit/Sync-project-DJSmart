@@ -1,11 +1,12 @@
 import os
 import time
+from pathlib import Path
 
 src = input("please enter source directory... ")
 rep = input("please enter replica directory... ")
 sync_int = int(input("please enter a synchronization interval (in seconds)... "))
 log_path = input('please choose the directory for the log file... ')
-log_name = log_path + 'log.txt'
+log_name = log_path + '\\log.txt'
 
 
 def one_way_sync(source_folder: str, replica_folder: str):
@@ -15,26 +16,27 @@ def one_way_sync(source_folder: str, replica_folder: str):
         line = '-'
         text.write(f'{line * 24}\n')
 
+    # make the replica directory (catches error if directory already exists
+    rep_path = Path(replica_folder)
+    try:
+        rep_path.mkdir()
+        print("Replica directory has been created...")
+    except FileExistsError:
+        print("Replica directory already exists...")
+
     run = True
     i = 0
 
     while run:
         # first creates list of file paths
         file_list = []
-        current_time = time.time()
         for root, dirs, files in os.walk(source_folder):
             if files:
                 for file in files:
-                    file_path = root + file
+                    file_path = os.path.join(root, file)
+                    print(file_path)
                     if os.path.isfile(file_path):
                         file_list.append(file_path)
-
-        # checking if files were modified since last sync
-        for file in file_list:
-            mod_time = os.path.getmtime(file)
-            difference_in_times = current_time - mod_time
-            if difference_in_times < sync_int:
-                pass
 
         # run counter
         i += 1
@@ -49,7 +51,7 @@ def one_way_sync(source_folder: str, replica_folder: str):
                 run = False
             else:
                 run = True
-                print("Invalid response, please type only y or n, cycle will continue.")
+                print("Invalid response, please type only y or n, cycle will repeat.")
 
 
 one_way_sync(src, rep)
