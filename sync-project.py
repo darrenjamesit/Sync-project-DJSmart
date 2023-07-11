@@ -12,8 +12,10 @@ def one_way_sync(source_folder: str, replica_folder: str):
         print(src)
         print(rep)
 
-        # counter to ask if synchronisation should continue every 5 loops
+        # run counter
         i += 1
+
+        #  asks if synchronisation should continue every 5 loops
         if i == 5:
             run_query = input("would you like to continue? y / n")
             if run_query == 'y':
