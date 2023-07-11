@@ -11,17 +11,24 @@ def one_way_sync(source_folder: str, replica_folder: str):
     i = 0
 
     while run:
+        # first creates list of file paths
         file_list = []
-        # first creates list of files
-        for file in os.listdir(source_folder):
-            if file:
-                file_list.append(os.path.join(source_folder, file))
-        print(file_list)
+        current_time = time.time()
+        for root, dirs, files in os.walk(source_folder):
+            if files:
+                for file in files:
+                    file_path = root + file
+                    if os.path.isfile(file_path):
+                        file_list.append(file_path)
+
+        # checking if files were modified since last sync
+        for file_path in file_list:
+            pass
 
         # run counter
         i += 1
 
-        #  asks if synchronisation should continue every 5 loops
+        # asks if synchronisation should continue every 5 loops
         if i == 5:
             run_query = input("would you like to continue? y / n... ")
             if run_query == 'y':
