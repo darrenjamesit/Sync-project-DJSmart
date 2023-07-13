@@ -42,7 +42,7 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
     i = 0
 
     while run:
-        # looks for deletions from previous run
+        # first makes a new list to compare to reference list (anything
         temp_file_list = []
         for root, dirs, files in os.walk(source_folder):
             if files:
@@ -50,6 +50,26 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                     temp_file_path = os.path.join(root, file)
                     if os.path.isfile(temp_file_path):
                         temp_file_list.append(temp_file_path)
+
+        # looks for deletions from previous run
+        for file in reference_file_list:
+            if file not in temp_file_list:
+                rep_file = file.replace('\\source', '\\replica')
+                os.remove(rep_file)
+                print(f'The file: {file} has been removed.')
+                with open(log, 'a') as text:
+                    text.write(f'The file: {file} has been removed.')
+                reference_file_list.remove(file)
+
+        # looks for additions from previous run
+        for file in temp_file_list:
+            if file not in reference_file_list:
+                rep_file = file.replace('\\source', '\\replica')
+                os.remove(rep_file)
+                print(f'The file: {file} has been added.')
+                with open(log, 'a') as text:
+                    text.write(f'The file: {file} has been added.')
+                reference_file_list.append(file)
 
         # run counter
         i += 1
