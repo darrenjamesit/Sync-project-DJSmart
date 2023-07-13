@@ -9,9 +9,9 @@ log_path = input('please choose the directory for the log file... ')
 log_name = log_path + '\\log.txt'
 
 
-def one_way_sync(source_folder: str, replica_folder: str):
+def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: int):
     # create a blank text file to act as log
-    with open(log_name, 'w') as text:
+    with open(log, 'w') as text:
         text.write("***Log of All Changes***\n")
         line = '-'
         text.write(f'{line * 24}\n')
@@ -27,19 +27,25 @@ def one_way_sync(source_folder: str, replica_folder: str):
     run = True
     i = 0
 
+    # first creates list of file paths
+    file_list = []
+    for root, dirs, files in os.walk(source_folder):
+        if files:
+            for file in files:
+                file_path = os.path.join(root, file)
+                print(file_path)
+                if os.path.isfile(file_path):
+                    file_list.append(file_path)
+
     while run:
-        # first creates list of file paths
-        file_list = []
-        for root, dirs, files in os.walk(source_folder):
-            if files:
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    print(file_path)
-                    if os.path.isfile(file_path):
-                        file_list.append(file_path)
+        # looks for deletions from previous run
+        for filename in file_list:
+            pass
 
         # run counter
         i += 1
+
+        time.sleep(interval)
 
         # asks if synchronisation should continue every 5 loops
         if i == 5:
@@ -54,4 +60,4 @@ def one_way_sync(source_folder: str, replica_folder: str):
                 print("Invalid response, please type only y or n, cycle will repeat.")
 
 
-one_way_sync(src, rep)
+one_way_sync(src, rep, log_name, sync_int)
