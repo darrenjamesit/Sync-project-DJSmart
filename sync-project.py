@@ -1,7 +1,7 @@
 import os
 import time
-from pathlib import Path
 import shutil
+from datetime import datetime
 
 src = input("please enter source directory... ")
 rep = input("please enter replica directory... ")
@@ -17,16 +17,11 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
         line = '-'
         text.write(f'{line * 24}\n')
 
-    # make the replica directory (catches error if directory already exists)
-    rep_path = Path(replica_folder)
+    # copies all files to replica folder
     try:
-        rep_path.mkdir()
-        print("Replica directory has been created...")
-    except FileExistsError:
-        print("Replica directory already exists...")
-    finally:
-        # copies all files to replica folder
         shutil.copytree(source_folder, replica_folder)
+    except FileExistsError:
+        print('Replica folder exists.')
 
     # first creates a reference list of file paths to determine if changes have occurred
     reference_file_list = []
@@ -50,26 +45,40 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                     temp_file_path = os.path.join(root, file)
                     if os.path.isfile(temp_file_path):
                         temp_file_list.append(temp_file_path)
-
-        # looks for deletions from previous run
-        for file in reference_file_list:
-            if file not in temp_file_list:
-                rep_file = file.replace('\\source', '\\replica')
-                os.remove(rep_file)
-                print(f'The file: {file} has been removed.')
+        try:
+            # if nothing changed, prints "no changes found"
+            if reference_file_list == temp_file_list:
+                current_time = datetime.now().time()
+                print(f"No changes found at {current_time}.")
                 with open(log, 'a') as text:
-                    text.write(f'The file: {file} has been removed.')
-                reference_file_list.remove(file)
+                    text.write('There were no changes at {current_time}. \n')
+            else:
+                # looks for deletions from previous run
+                for file in reference_file_list:
+                    if file not in temp_file_list:
+                        current_time = datetime.now().time()
+                        rep_file = file.replace('\\source', '\\replica')
+                        os.remove(rep_file)
+                        print(f'The file: {file} has been removed at {current_time}.')
+                        with open(log, 'a') as text:
+                            text.write(f'The file: {file} has been removed at {current_time}.\n')
+                        reference_file_list.remove(file)
 
-        # looks for additions from previous run
-        for file in temp_file_list:
-            if file not in reference_file_list:
-                rep_file = file.replace('\\source', '\\replica')
-                os.remove(rep_file)
-                print(f'The file: {file} has been added.')
-                with open(log, 'a') as text:
-                    text.write(f'The file: {file} has been added.')
-                reference_file_list.append(file)
+                # looks for additions from previous run
+                for file in temp_file_list:
+                    if file not in reference_file_list:
+                        current_time = datetime.now().time()
+                        rep_file = file.replace('\\source', '\\replica')
+                        os.remove(rep_file)
+                        print(f'The file: {file} has been added at {current_time}.')
+                        with open(log, 'a') as text:
+                            text.write(f'The file: {file} has been added at {current_time}.\n')
+                        reference_file_list.append(file)
+
+        except FileNotFoundError:
+            # catches FileNotFoundError if a change occurs during a synchronisation run
+            # which will be rectified in the next run
+            continue
 
         # run counter
         i += 1
