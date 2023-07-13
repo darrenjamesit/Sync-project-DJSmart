@@ -21,7 +21,7 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
     try:
         shutil.copytree(source_folder, replica_folder)
     except FileExistsError:
-        print('Replica folder exists.')
+        print('Replica folder already exists.')
 
     # first creates a reference list of file paths to determine if changes have occurred
     reference_file_list = []
@@ -51,7 +51,7 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                 current_time = datetime.now().time()
                 print(f"No changes found at {current_time}.")
                 with open(log, 'a') as text:
-                    text.write('There were no changes at {current_time}. \n')
+                    text.write(f"There were no changes at {current_time}. \n")
             else:
                 # looks for deletions from previous run
                 for file in reference_file_list:
@@ -61,15 +61,14 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                         os.remove(rep_file)
                         print(f'The file: {file} has been removed at {current_time}.')
                         with open(log, 'a') as text:
-                            text.write(f'The file: {file} has been removed at {current_time}.\n')
+                            text.write(f"The file: {file} has been removed at {current_time}.\n")
                         reference_file_list.remove(file)
 
                 # looks for additions from previous run
                 for file in temp_file_list:
                     if file not in reference_file_list:
                         current_time = datetime.now().time()
-                        rep_file = file.replace('\\source', '\\replica')
-                        os.remove(rep_file)
+                        shutil.copy(file, replica_folder)
                         print(f'The file: {file} has been added at {current_time}.')
                         with open(log, 'a') as text:
                             text.write(f'The file: {file} has been added at {current_time}.\n')
