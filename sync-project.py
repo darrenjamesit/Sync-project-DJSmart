@@ -1,6 +1,7 @@
 import os
 import time
 from pathlib import Path
+import shutil
 
 src = input("please enter source directory... ")
 rep = input("please enter replica directory... ")
@@ -16,31 +17,39 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
         line = '-'
         text.write(f'{line * 24}\n')
 
-    # make the replica directory (catches error if directory already exists
+    # make the replica directory (catches error if directory already exists)
     rep_path = Path(replica_folder)
     try:
         rep_path.mkdir()
         print("Replica directory has been created...")
     except FileExistsError:
         print("Replica directory already exists...")
+    finally:
+        # copies all files to replica folder
+        shutil.copytree(source_folder, replica_folder)
+
+    # first creates a reference list of file paths to determine if changes have occurred
+    reference_file_list = []
+    for root, dirs, files in os.walk(source_folder):
+        if files:
+            for file in files:
+                ref_file_path = os.path.join(root, file)
+                print(ref_file_path)
+                if os.path.isfile(ref_file_path):
+                    reference_file_list.append(ref_file_path)
 
     run = True
     i = 0
 
-    # first creates list of file paths
-    file_list = []
-    for root, dirs, files in os.walk(source_folder):
-        if files:
-            for file in files:
-                file_path = os.path.join(root, file)
-                print(file_path)
-                if os.path.isfile(file_path):
-                    file_list.append(file_path)
-
     while run:
         # looks for deletions from previous run
-        for filename in file_list:
-            pass
+        temp_file_list = []
+        for root, dirs, files in os.walk(source_folder):
+            if files:
+                for file in files:
+                    temp_file_path = os.path.join(root, file)
+                    if os.path.isfile(temp_file_path):
+                        temp_file_list.append(temp_file_path)
 
         # run counter
         i += 1
