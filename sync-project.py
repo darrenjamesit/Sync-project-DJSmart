@@ -98,7 +98,7 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                 i = 0
             elif run_query == 'n':
                 run = False
-                print("The program will nopw termionate, thank you!")
+                print("The program will nopw terminate, thank you!")
             else:
                 run = True
                 print("Invalid response, please type only y or n, cycle will repeat.")
