@@ -17,11 +17,16 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
         line = '-'
         text.write(f'{line * 24}\n')
 
-    # copies all files to replica folder
-    try:
+    # creates replica directory and copies all files to replica folder
+    if not os.path.exists(replica_folder):
+        print('Replica folder has been created.')
         shutil.copytree(source_folder, replica_folder)
-    except FileExistsError:
+    else:
         print('Replica folder already exists.')
+        for file in os.listdir(source_folder):
+            source_file = os.path.join(source_folder, file)
+            replica_file = os.path.join(replica_folder, file)
+            shutil.copy2(source_file, replica_file)
 
     # first creates a reference list of file paths to determine if changes have occurred
     reference_file_list = []
@@ -57,7 +62,8 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                 for file in reference_file_list:
                     if file not in temp_file_list:
                         current_time = datetime.now().time()
-                        rep_file = file.replace('\\source', '\\replica')
+                        file_folder = file.rsplit('\\', 1)[-1]
+                        rep_file = replica_folder + '\\' + file_folder
                         os.remove(rep_file)
                         print(f'The file: {file} has been removed at {current_time}.')
                         with open(log, 'a') as text:
