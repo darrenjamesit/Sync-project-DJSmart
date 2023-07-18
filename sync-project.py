@@ -63,7 +63,7 @@ def one_way_sync(source_folder: str, replica_folder: str, log: str, interval: in
                     if file not in temp_file_list:
                         current_time = datetime.now().time()
                         file_folder = file.rsplit('\\', 1)[-1]
-                        rep_file = replica_folder + '\\' + file_folder
+                        rep_file = replica_folder + '\\' + file_folder  # this will end up being a string, this warning is not necessary
                         os.remove(rep_file)
                         print(f'The file: {file} has been removed at {current_time}.')
                         with open(log, 'a') as text:
